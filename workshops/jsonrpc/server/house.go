@@ -45,8 +45,37 @@ type Args struct {
 
 type House int
 
+func (t *House) GetHouse(args Args, result *HouseDAO) error {
+	log.Printf("ID : %d", args.Id)
+	*result = houses[args.Id-1]
+	log.Print(result)
+	return nil
+}
+
+func (t *House) GetHouses(args Args, result *[]HouseDAO) error {
+	*result = houses
+	return nil
+}
+
 func main() {
-	/**
-    TO DO
-    **/
+	house := new(House)
+	listener, e := net.Listen("tcp", "0.0.0.0:8080")
+	if e != nil {
+		log.Fatal("Listen error : ", e)
+	}
+	log.Printf("Starting server on port 8080")
+
+	server := rpc.NewServer()
+	server.Register(house)
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		server.ServeHTTP(w, r)
+	})
+	err := http.Serve(listener, nil)
+
+	if err != nil {
+		log.Fatal("Error serving : ", err)
+	}
+
 }
